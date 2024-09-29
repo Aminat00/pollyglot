@@ -1,70 +1,66 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from "react";
+import { Button, FlatList, Text, TextInput, View } from "react-native";
+import { fetchChatResponse } from "../lib/openai-service";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Header } from "@/components";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
+type Message = {
+	text: string;
+	sender: "user" | "ai";
+};
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+	const [messages, setMessages] = React.useState<Message[]>([]);
+	const [inputText, setInputText] = React.useState<string>("");
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+	const handleSendMessage = async () => {
+		if (inputText.trim() !== "") {
+			// Add user's message to chat
+			setMessages((prevMessages) => [
+				...prevMessages,
+				{ text: inputText, sender: "user" },
+			]);
+
+			// Fetch response from OpenAI
+			const aiResponse = await fetchChatResponse(inputText);
+
+			// Ensure aiResponse is a string
+			const responseText = aiResponse || "No response from AI";
+
+			// Add AI's response to chat
+			setMessages((prevMessages) => [
+				...prevMessages,
+				{ text: responseText, sender: "ai" },
+			]);
+
+			setInputText("");
+		}
+	};
+	return (
+		<SafeAreaView className="flex-1 bg-white">
+			<Header />
+			<FlatList
+				data={messages}
+				renderItem={({ item }) => (
+					<Text
+						style={{
+							padding: 8,
+							backgroundColor: item.sender === "user" ? "#ddd" : "#bbb",
+						}}>
+						{item.sender === "user" ? "You: " : "AI: "}
+						{item.text}
+					</Text>
+				)}
+				keyExtractor={(_, index) => index.toString()}
+			/>
+
+			<TextInput
+				value={inputText}
+				onChangeText={setInputText}
+				className="border border-[#ccc] mb-2 "
+				placeholder="Type your message..."
+			/>
+
+			<Button title="Send" onPress={handleSendMessage} />
+		</SafeAreaView>
+	);
+}
