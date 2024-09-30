@@ -8,7 +8,7 @@ export const Header: React.FC = () => {
 	return (
 		<ImageBackground
 			source={bgImage}
-			className="bg-[#0D182E] flex flex-row gap-x-4 justify-center">
+			className=" h-52 bg-[#0D182E] flex flex-row gap-x-4 justify-center items-center">
 			<Image source={parrot} />
 			<View>
 				<Text className="text-4xl font-extrabold leading-[65.13px] text-[#32CD32] text-left">
