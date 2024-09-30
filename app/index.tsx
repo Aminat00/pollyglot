@@ -20,10 +20,6 @@ import {
 	UserMessageBox,
 } from "@/components";
 
-const turkey = require("/assets/images/flag-turkey.png");
-const arab = require("/assets/images/flag-saudi-arabia.png");
-const japan = require("/assets/images/flag-japan.png");
-
 type Message = {
 	text: string;
 	sender: "user" | "ai";
